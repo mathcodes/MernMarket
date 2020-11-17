@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A marketplace for buyers and sellers",
   "main": "client/main.js",
-  "homepage": "https://github.com/mathcodes/MernMarket#readme",
+  "homepage": "https://git.heroku.com/jonsmernmarket.git",
   "dependencies": {
     "@hot-loader/react-dom": "16.13.0",
     "@material-ui/core": "4.9.8",
@@ -45,7 +45,9 @@
     "webpack-node-externals": "1.7.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd client && npm run build",
+    "heroku-postbuild": "npm run build"
   },
   "repository": {
     "type": "git",

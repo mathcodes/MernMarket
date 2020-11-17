@@ -1,5 +1,5 @@
 const config = {
-  env: process.env.NODE_ENV || 'development',
+  env: process.env.NODE_ENV || 'production',
   port: process.env.PORT || 3000,
   jwtSecret: process.env.JWT_SECRET || "YOUR_secret_key",
   mongoUri: "mongodb+srv://JonMongoDB:JonMongoDB@devconnection.xzy3k.mongodb.net/mernMarket?retryWrites=true&w=majority",
