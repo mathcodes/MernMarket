@@ -2,8 +2,7 @@
   "name": "mernmarket",
   "version": "1.0.0",
   "description": "A marketplace for buyers and sellers",
-  "main": "client/main.js",
-  "homepage": "https://git.heroku.com/jonsmernmarket.git",
+  "homepage": "http://mathcodes.github.io/MernMarket",
   "dependencies": {
     "@hot-loader/react-dom": "16.13.0",
     "@material-ui/core": "4.9.8",
@@ -15,6 +14,7 @@
     "express": "4.17.1",
     "express-jwt": "5.3.1",
     "formidable": "1.2.2",
+    "gh-pages": "^3.1.0",
     "helmet": "3.22.0",
     "jsonwebtoken": "8.5.1",
     "lodash": "4.17.15",
@@ -44,10 +44,12 @@
     "webpack-hot-middleware": "2.25.0",
     "webpack-node-externals": "1.7.2"
   },
+  "main": "./dist/server.generated.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd client && npm run build",
-    "heroku-postbuild": "npm run build"
+    "development": "nodemon",
+    "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js",
+    "start": "NODE_ENV=production node ./dist/server.generated.js",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
