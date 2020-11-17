@@ -1,16 +1,16 @@
-import React, {useState} from 'react'
+import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import {makeStyles} from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import Icon from '@material-ui/core/Icon'
-import auth from '../auth/auth-helper'
+import {withStyles} from 'material-ui/styles'
+import Button from 'material-ui/Button'
+import Typography from 'material-ui/Typography'
+import Icon from 'material-ui/Icon'
+import auth from './../auth/auth-helper'
 import cart from './cart-helper.js'
 import {CardElement, injectStripe} from 'react-stripe-elements'
-import {create} from '../order/api-order.js'
+import {create} from './../order/api-order.js'
 import {Redirect} from 'react-router-dom'
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   subheading: {
     color: 'rgba(88, 114, 128, 0.87)',
     marginTop: "20px",
@@ -35,31 +35,29 @@ const useStyles = makeStyles(theme => ({
     borderRadius: '4px',
     background: 'white'
   }
-}))
+})
 
-const PlaceOrder = (props) => {
-  const classes = useStyles()
-  const [values, setValues] = useState({
+class PlaceOrder extends Component {
+  state = {
     order: {},
     error: '',
-    redirect: false,
-    orderId: ''
-  })
+    redirect: false
+  }
 
-  const placeOrder = ()=>{
-    props.stripe.createToken().then(payload => {
+  placeOrder = ()=>{
+    this.props.stripe.createToken().then(payload => {
       if(payload.error){
-        setValues({...values, error: payload.error.message})
+        this.setState({error: payload.error.message})
       }else{
         const jwt = auth.isAuthenticated()
         create({userId:jwt.user._id}, {
           t: jwt.token
-        }, props.checkoutDetails, payload.token.id).then((data) => {
+        }, this.props.checkoutDetails, payload.token.id).then((data) => {
           if (data.error) {
-            setValues({...values, error: data.error})
+            this.setState({error: data.error})
           } else {
             cart.emptyCart(()=> {
-              setValues({...values, 'orderId':data._id,'redirect': true})
+              this.setState({'orderId':data._id,'redirect': true})
             })
           }
         })
@@ -67,9 +65,10 @@ const PlaceOrder = (props) => {
   })
 }
 
-
-    if (values.redirect) {
-      return (<Redirect to={'/order/' + values.orderId}/>)
+render() {
+    const {classes} = this.props
+    if (this.state.redirect) {
+      return (<Redirect to={'/order/' + this.state.orderId}/>)
     }
     return (
     <span>
@@ -94,19 +93,20 @@ const PlaceOrder = (props) => {
           }}
       />
       <div className={classes.checkout}>
-        { values.error &&
+        { this.state.error &&
           (<Typography component="span" color="error" className={classes.error}>
             <Icon color="error" className={classes.errorIcon}>error</Icon>
-              {values.error}
+              {this.state.error}
           </Typography>)
         }
-        <Button color="secondary" variant="contained" onClick={placeOrder}>Place Order</Button>
+        <Button color="secondary" variant="raised" onClick={this.placeOrder}>Place Order</Button>
       </div>
     </span>)
-
+  }
 }
 PlaceOrder.propTypes = {
+  classes: PropTypes.object.isRequired,
   checkoutDetails: PropTypes.object.isRequired
 }
 
-export default injectStripe(PlaceOrder)
+export default injectStripe(withStyles(styles)(PlaceOrder))

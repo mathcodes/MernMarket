@@ -1,17 +1,16 @@
-import React, {useState, useEffect}  from 'react'
-import Card from '@material-ui/core/Card'
-import CardHeader from '@material-ui/core/CardHeader'
-import CardMedia from '@material-ui/core/CardMedia'
-import Typography from '@material-ui/core/Typography'
-import Icon from '@material-ui/core/Icon'
-import Grid from '@material-ui/core/Grid'
-import {makeStyles} from '@material-ui/core/styles'
+import React, {Component} from 'react'
+import Card, {CardHeader, CardMedia} from 'material-ui/Card'
+import Typography from 'material-ui/Typography'
+import Icon from 'material-ui/Icon'
+import Grid from 'material-ui/Grid'
+import PropTypes from 'prop-types'
+import {withStyles} from 'material-ui/styles'
 import {read, listRelated} from './api-product.js'
 import {Link} from 'react-router-dom'
-import Suggestions from './Suggestions'
-import AddToCart from '../cart/AddToCart'
+import Suggestions from './../product/Suggestions'
+import AddToCart from './../cart/AddToCart'
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   root: {
     flexGrow: 1,
     margin: 30,
@@ -58,60 +57,58 @@ const useStyles = makeStyles(theme => ({
     margin: '8px 24px',
     display: 'inline-block'
   }
-}))
+})
 
-export default function Product ({match}) {
-  const classes = useStyles()
-  const [product, setProduct] = useState({shop:{}})
-  const [suggestions, setSuggestions] = useState([])
-  const [error, setError] = useState('')
-    useEffect(() => {
-      const abortController = new AbortController()
-      const signal = abortController.signal
-  
-      read({productId: match.params.productId}, signal).then((data) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          setProduct(data)
-        }
-      })
-    return function cleanup(){
-      abortController.abort()
+class Product extends Component {
+  constructor({match}) {
+    super()
+    this.state = {
+      product: {shop: {}},
+      suggestions: [],
+      suggestionTitle: 'Related Products'
     }
-  }, [match.params.productId])
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    const signal = abortController.signal
-
+    this.match = match
+  }
+  loadProduct = (productId) => {
+    read({productId: productId}).then((data) => {
+      if (data.error) {
+        this.setState({error: data.error})
+      } else {
+        this.setState({product: data})
         listRelated({
-          productId: match.params.productId}, signal).then((data) => {
+          productId: data._id}).then((data) => {
           if (data.error) {
-            setError(data.error)
+            console.log(data.error)
           } else {
-            setSuggestions(data)
+            this.setState({suggestions: data})
           }
         })
-  return function cleanup(){
-    abortController.abort()
+     }
+    })
   }
-}, [match.params.productId])
+  componentDidMount = () => {
+    this.loadProduct(this.match.params.productId)
+  }
+  componentWillReceiveProps = (props) => {
+    this.loadProduct(props.match.params.productId)
+  }
 
-    const imageUrl = product._id
-          ? `/api/product/image/${product._id}?${new Date().getTime()}`
+  render() {
+    const imageUrl = this.state.product._id
+          ? `/api/product/image/${this.state.product._id}?${new Date().getTime()}`
           : '/api/product/defaultphoto'
+    const {classes} = this.props
     return (
         <div className={classes.root}>
-          <Grid container spacing={10}>
+          <Grid container spacing={40}>
             <Grid item xs={7} sm={7}>
               <Card className={classes.card}>
                 <CardHeader
-                  title={product.name}
-                  subheader={product.quantity > 0? 'In Stock': 'Out of Stock'}
+                  title={this.state.product.name}
+                  subheader={this.state.product.quantity > 0? 'In Stock': 'Out of Stock'}
                   action={
                     <span className={classes.action}>
-                      <AddToCart cartStyle={classes.addCart} item={product}/>
+                      <AddToCart cartStyle={classes.addCart} item={this.state.product}/>
                     </span>
                   }
                 />
@@ -119,14 +116,14 @@ export default function Product ({match}) {
                   <CardMedia
                     className={classes.media}
                     image={imageUrl}
-                    title={product.name}
+                    title={this.state.product.name}
                   />
-                  <Typography component="p" variant="subtitle1" className={classes.subheading}>
-                    {product.description}<br/>
-                    <span className={classes.price}>$ {product.price}</span>
-                    <Link to={'/shops/'+product.shop._id} className={classes.link}>
+                  <Typography component="p" type="subheading" className={classes.subheading}>
+                    {this.state.product.description}<br/>
+                    <span className={classes.price}>$ {this.state.product.price}</span>
+                    <Link to={'/shops/'+this.state.product.shop._id} className={classes.link}>
                       <span>
-                        <Icon className={classes.icon}>shopping_basket</Icon> {product.shop.name}
+                        <Icon className={classes.icon}>shopping_basket</Icon> {this.state.product.shop.name}
                       </span>
                     </Link>
                   </Typography>
@@ -134,10 +131,17 @@ export default function Product ({match}) {
                 </div>
               </Card>
             </Grid>
-            {suggestions.length > 0 &&
+            {this.state.suggestions.length > 0 &&
               (<Grid item xs={5} sm={5}>
-                <Suggestions  products={suggestions} title='Related Products'/>
+                <Suggestions  products={this.state.suggestions} title='Related Products'/>
               </Grid>)}
           </Grid>
         </div>)
+  }
 }
+
+Product.propTypes = {
+  classes: PropTypes.object.isRequired
+}
+
+export default withStyles(styles)(Product)

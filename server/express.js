@@ -5,22 +5,23 @@ import cookieParser from 'cookie-parser'
 import compress from 'compression'
 import cors from 'cors'
 import helmet from 'helmet'
-import Template from '../template'
+import Template from './../template'
 import userRoutes from './routes/user.routes'
 import authRoutes from './routes/auth.routes'
 import shopRoutes from './routes/shop.routes'
 import productRoutes from './routes/product.routes'
 import orderRoutes from './routes/order.routes'
-import auctionRoutes from './routes/auction.routes'
 
 // modules for server side rendering
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import MainRouter from '../client/MainRouter'
-import { StaticRouter } from 'react-router-dom'
+import MainRouter from './../client/MainRouter'
+import StaticRouter from 'react-router-dom/StaticRouter'
 
-import { ServerStyleSheets, ThemeProvider } from '@material-ui/styles'
-import theme from '../client/theme'
+import { SheetsRegistry } from 'react-jss/lib/jss'
+import JssProvider from 'react-jss/lib/JssProvider'
+import { MuiThemeProvider, createMuiTheme, createGenerateClassName } from 'material-ui/styles'
+import { blueGrey, lightGreen } from 'material-ui/colors'
 //end
 
 //comment out before building for production
@@ -50,24 +51,43 @@ app.use('/', authRoutes)
 app.use('/', shopRoutes)
 app.use('/', productRoutes)
 app.use('/', orderRoutes)
-app.use('/', auctionRoutes)
 
 app.get('*', (req, res) => {
-  const sheets = new ServerStyleSheets()
-  const context = {}
-  const markup = ReactDOMServer.renderToString(
-    sheets.collect(
+   const sheetsRegistry = new SheetsRegistry()
+   const theme = createMuiTheme({
+     palette: {
+       primary: {
+       light: '#8eacbb',
+       main: '#607d8b',
+       dark: '#34515e',
+       contrastText: '#fff',
+     },
+     secondary: {
+       light: '#e7ff8c',
+       main: '#b2ff59',
+       dark: '#7ecb20',
+       contrastText: '#000',
+     },
+       openTitle: blueGrey['400'],
+       protectedTitle: lightGreen['400'],
+       type: 'light'
+     }
+   })
+   const generateClassName = createGenerateClassName()
+   const context = {}
+   const markup = ReactDOMServer.renderToString(
       <StaticRouter location={req.url} context={context}>
-          <ThemeProvider theme={theme}>
-            <MainRouter/>
-          </ThemeProvider>
+         <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
+            <MuiThemeProvider theme={theme} sheetsManager={new Map()}>
+              <MainRouter/>
+            </MuiThemeProvider>
+         </JssProvider>
       </StaticRouter>
      )
-  )
     if (context.url) {
       return res.redirect(303, context.url)
     }
-    const css = sheets.toString()
+    const css = sheetsRegistry.toString()
     res.status(200).send(Template({
       markup: markup,
       css: css
@@ -78,9 +98,6 @@ app.get('*', (req, res) => {
 app.use((err, req, res, next) => {
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({"error" : err.name + ": " + err.message})
-  }else if (err) {
-    res.status(400).json({"error" : err.name + ": " + err.message})
-    console.log(err)
   }
 })
 

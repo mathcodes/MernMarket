@@ -1,32 +1,29 @@
-import React, {useState, useEffect} from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import Paper from '@material-ui/core/Paper'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemAvatar from '@material-ui/core/ListItemAvatar'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import ListItemText from '@material-ui/core/ListItemText'
-import Avatar from '@material-ui/core/Avatar'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import Edit from '@material-ui/icons/Edit'
-import Divider from '@material-ui/core/Divider'
-import auth from '../auth/auth-helper'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types'
+import {withStyles} from 'material-ui/styles'
+import Paper from 'material-ui/Paper'
+import List, {ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText} from 'material-ui/List'
+import Avatar from 'material-ui/Avatar'
+import IconButton from 'material-ui/IconButton'
+import Icon from 'material-ui/Icon'
+import Button from 'material-ui/Button'
+import Typography from 'material-ui/Typography'
+import Edit from 'material-ui-icons/Edit'
+import Divider from 'material-ui/Divider'
+import auth from './../auth/auth-helper'
 import {listByOwner} from './api-shop.js'
 import {Redirect, Link} from 'react-router-dom'
 import DeleteShop from './DeleteShop'
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   root: theme.mixins.gutters({
     maxWidth: 600,
     margin: 'auto',
-    padding: theme.spacing(3),
-    marginTop: theme.spacing(5)
+    padding: theme.spacing.unit * 3,
+    marginTop: theme.spacing.unit * 5
   }),
   title: {
-    margin: `${theme.spacing(3)}px 0 ${theme.spacing(3)}px ${theme.spacing(1)}px` ,
+    margin: `${theme.spacing.unit * 3}px 0 ${theme.spacing.unit * 3}px ${theme.spacing.unit}px` ,
     color: theme.palette.protectedTitle,
     fontSize: '1.2em'
   },
@@ -36,38 +33,37 @@ const useStyles = makeStyles(theme => ({
   leftIcon: {
     marginRight: "8px"
   }
-}))
-
-export default function MyShops(){
-  const classes = useStyles();
-  const [shops, setShops] = useState([])
-  const [redirectToSignin, setRedirectToSignin] = useState(false)
-  const jwt = auth.isAuthenticated()
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    const signal = abortController.signal
-    listByOwner({
-      userId: jwt.user._id
-    }, {t: jwt.token}, signal).then((data) => {
-      if (data.error) {
-        setRedirectToSignin(true)
-      } else {
-        setShops(data)
-      }
-    })
-    return function cleanup(){
-      abortController.abort()
-    }
-  }, [])
-
-  const removeShop = (shop) => {
-    const updatedShops = [...shops]
-    const index = updatedShops.indexOf(shop)
-    updatedShops.splice(index, 1)
-    setShops(updatedShops)
+})
+class MyShops extends Component {
+  state = {
+      shops:[],
+      redirectToSignin: false
   }
 
+  loadShops = () => {
+    const jwt = auth.isAuthenticated()
+    listByOwner({
+      userId: jwt.user._id
+    }, {t: jwt.token}).then((data) => {
+      if (data.error) {
+        this.setState({redirectToSignin: true})
+      } else {
+        this.setState({shops: data})
+      }
+    })
+  }
+  removeShop = (shop) => {
+    const updatedShops = this.state.shops
+    const index = updatedShops.indexOf(shop)
+    updatedShops.splice(index, 1)
+    this.setState({shops: updatedShops})
+  }
+  componentDidMount = () => {
+    this.loadShops()
+  }
+  render() {
+    const {classes} = this.props
+    const redirectToSignin = this.state.redirectToSignin
     if (redirectToSignin) {
       return <Redirect to='/signin'/>
     }
@@ -78,14 +74,14 @@ export default function MyShops(){
           Your Shops
           <span className={classes.addButton}>
             <Link to="/seller/shop/new">
-              <Button color="primary" variant="contained">
+              <Button color="primary" variant="raised">
                 <Icon className={classes.leftIcon}>add_box</Icon>  New Shop
               </Button>
             </Link>
           </span>
         </Typography>
         <List dense>
-        {shops.map((shop, i) => {
+        {this.state.shops.map((shop, i) => {
             return   <span key={i}>
               <ListItem button>
                 <ListItemAvatar>
@@ -104,7 +100,7 @@ export default function MyShops(){
                         <Edit/>
                       </IconButton>
                     </Link>
-                    <DeleteShop shop={shop} onRemove={removeShop}/>
+                    <DeleteShop shop={shop} onRemove={this.removeShop}/>
                   </ListItemSecondaryAction>)
                 }
               </ListItem>
@@ -113,4 +109,10 @@ export default function MyShops(){
         </List>
       </Paper>
     </div>)
+  }
 }
+MyShops.propTypes = {
+  classes: PropTypes.object.isRequired
+}
+
+export default withStyles(styles)(MyShops)

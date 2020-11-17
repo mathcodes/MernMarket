@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import crypto from 'crypto'
 const CartItemSchema = new mongoose.Schema({
   product: {type: mongoose.Schema.ObjectId, ref: 'Product'},
   quantity: Number,

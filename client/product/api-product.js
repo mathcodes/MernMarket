@@ -1,122 +1,97 @@
 import queryString from 'query-string'
-const create = async (params, credentials, product) => {
-  try {
-    let response = await fetch('/api/products/by/'+ params.shopId, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + credentials.t
-        },
-        body: product
-      })
-      return response.json()
-    }catch(err) {
-      console.log(err)
-    }
-}
-
-const read = async (params, signal) => {
-  try {
-    let response = await fetch('/api/products/' + params.productId, {
-      method: 'GET',
-      signal: signal
-    })
-    return response.json()
-  } catch(err) {
-    console.log(err)
-  }
-}
-
-const update = async (params, credentials, product) => {
-  try {
-    let response = await fetch('/api/product/' + params.shopId +'/'+params.productId, {
-      method: 'PUT',
+const create = (params, credentials, product) => {
+  return fetch('/api/products/by/'+ params.shopId, {
+      method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer ' + credentials.t
       },
       body: product
     })
-    return response.json()
-  } catch(err) {
-    console.log(err)
-  }
+    .then((response) => {
+      return response.json()
+    }).catch((err) => console.log(err))
 }
 
-const remove = async (params, credentials) => {
-  try {
-    let response = await fetch('/api/product/' + params.shopId +'/'+params.productId, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + credentials.t
-      }
-    })
+const read = (params) => {
+  return fetch('/api/products/' + params.productId, {
+    method: 'GET'
+  }).then((response) => {
     return response.json()
-  } catch(err) {
-    console.log(err)
-  }
+  }).catch((err) => console.log(err))
 }
 
-const listByShop = async (params, signal) => {
-  try {
-    let response = await fetch('/api/products/by/'+params.shopId, {
-      method: 'GET',
-      signal: signal
-    })
+const update = (params, credentials, product) => {
+  return fetch('/api/product/' + params.shopId +'/'+params.productId, {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer ' + credentials.t
+    },
+    body: product
+  }).then((response) => {
     return response.json()
-  } catch(err) {
+  }).catch((err) => {
     console.log(err)
-  }
-}
-
-const listLatest = async (signal) => {
-  try {
-    let response = await fetch('/api/products/latest', {
-      method: 'GET',
-      signal: signal
-    })
-    return response.json()
-  } catch(err) {
-    console.log(err)
-  }
-}
-
-const listRelated = async (params, signal) => {
-  try {
-    let response = await fetch('/api/products/related/'+params.productId, {
-    method: 'GET',
-    signal: signal
   })
-    return response.json()
-  }catch(err) {
-  console.log(err)  
-  }
 }
 
-const listCategories = async (signal) => {
-  try {
-    let response = await fetch('/api/products/categories', {
-      method: 'GET',
-      signal: signal
-    })
+const remove = (params, credentials) => {
+  return fetch('/api/product/' + params.shopId +'/'+params.productId, {
+    method: 'DELETE',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + credentials.t
+    }
+  }).then((response) => {
     return response.json()
-  } catch(err) {
+  }).catch((err) => {
     console.log(err)
-  }
+  })
 }
 
-const list = async (params, signal) => {
+const listByShop = (params) => {
+  return fetch('/api/products/by/'+params.shopId, {
+    method: 'GET'
+  }).then((response) => {
+    return response.json()
+  }).catch((err) => {
+    console.log(err)
+  })
+}
+
+const listLatest = () => {
+  return fetch('/api/products/latest', {
+    method: 'GET',
+  }).then(response => {
+    return response.json()
+  }).catch((err) => console.log(err))
+}
+
+const listRelated = (params) => {
+  return fetch('/api/products/related/'+params.productId, {
+    method: 'GET',
+  }).then(response => {
+    return response.json()
+  }).catch((err) => console.log(err))
+}
+
+const listCategories = () => {
+  return fetch('/api/products/categories', {
+    method: 'GET',
+  }).then(response => {
+    return response.json()
+  }).catch((err) => console.log(err))
+}
+
+const list = (params) => {
   const query = queryString.stringify(params)
-  try {
-    let response = await fetch('/api/products?'+query, {
-      method: 'GET',
-    })
+  return fetch('/api/products?'+query, {
+    method: 'GET',
+  }).then(response => {
     return response.json()
-  }catch(err) {
-    console.log(err)
-  }
+  }).catch((err) => console.log(err))
 }
 
 export {

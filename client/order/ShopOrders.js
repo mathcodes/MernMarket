@@ -1,32 +1,31 @@
-import React, {useState, useEffect} from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import Paper from '@material-ui/core/Paper'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemText from '@material-ui/core/ListItemText'
-import Typography from '@material-ui/core/Typography'
-import ExpandLess from '@material-ui/icons/ExpandLess'
-import ExpandMore from '@material-ui/icons/ExpandMore'
-import Collapse from '@material-ui/core/Collapse'
-import Divider from '@material-ui/core/Divider'
-import auth from '../auth/auth-helper'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types'
+import {withStyles} from 'material-ui/styles'
+import Paper from 'material-ui/Paper'
+import List, {ListItem, ListItemText} from 'material-ui/List'
+import Typography from 'material-ui/Typography'
+import ExpandLess from 'material-ui-icons/ExpandLess'
+import ExpandMore from 'material-ui-icons/ExpandMore'
+import Collapse from 'material-ui/transitions/Collapse'
+import Divider from 'material-ui/Divider'
+import auth from './../auth/auth-helper'
 import {listByShop} from './api-order.js'
 import ProductOrderEdit from './ProductOrderEdit'
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   root: theme.mixins.gutters({
     maxWidth: 600,
     margin: 'auto',
-    padding: theme.spacing(3),
-    marginTop: theme.spacing(5)
+    padding: theme.spacing.unit * 3,
+    marginTop: theme.spacing.unit * 5
   }),
   title: {
-    margin: `${theme.spacing(3)}px 0 ${theme.spacing(3)}px ${theme.spacing(1)}px` ,
+    margin: `${theme.spacing.unit * 3}px 0 ${theme.spacing.unit * 3}px ${theme.spacing.unit}px` ,
     color: theme.palette.protectedTitle,
     fontSize: '1.2em'
   },
   subheading: {
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing.unit,
     color: '#434b4e',
     fontSize: '1.1em'
   },
@@ -35,56 +34,60 @@ const useStyles = makeStyles(theme => ({
     paddingTop: '16px',
     backgroundColor:'#f8f8f8'
   }
-}))
-export default function ShopOrders({match}) {
-  const classes = useStyles()
-  const [orders, setOrders] = useState([])
-  const [open, setOpen] = useState(0)
-
-
+})
+class ShopOrders extends Component {
+  constructor({match}) {
+    super()
+    this.state = {
+      open: 0,
+      orders:[]
+    }
+    this.match = match
+  }
+  loadOrders = () => {
     const jwt = auth.isAuthenticated()
-    useEffect(() => {
-      const abortController = new AbortController()
-      const signal = abortController.signal
-      listByShop({
-        shopId: match.params.shopId
-      }, {t: jwt.token}, signal).then((data) => {
-        if (data.error) {
-          console.log(data)
-        } else {
-          setOrders(data)
-        }
-      })
-      return function cleanup(){
-        abortController.abort()
+    listByShop({
+      shopId: this.match.params.shopId
+    }, {t: jwt.token}).then((data) => {
+      if (data.error) {
+        console.log(data)
+      } else {
+        this.setState({orders: data})
       }
-    }, [])
-
-  const handleClick = index => event => {
-    setOpen(index)
+    })
   }
 
-  const updateOrders = (index, updatedOrder) => {
-    let updatedOrders = orders
-    updatedOrders[index] = updatedOrder
-    setOrders([...updatedOrders])
+  componentDidMount = () => {
+    this.loadOrders()
   }
 
+  handleClick = index => event => {
+    this.setState({open: index})
+  }
+
+  updateOrders = (index, updatedOrder) => {
+    let orders = this.state.orders
+    orders[index] = updatedOrder
+    this.setState({orders: orders})
+  }
+
+  render() {
+    const {classes} = this.props
     return (
     <div>
       <Paper className={classes.root} elevation={4}>
         <Typography type="title" className={classes.title}>
-          Orders in {match.params.shop}
+          Orders in {this.match.params.shop}
         </Typography>
         <List dense >
-          {orders.map((order, index) => {
+          {this.state.orders.map((order, index) => {
             return   <span key={index}>
-              <ListItem button onClick={handleClick(index)}>
+              <ListItem button onClick={this.handleClick(index)}>
                 <ListItemText primary={'Order # '+order._id} secondary={(new Date(order.created)).toDateString()}/>
-                {open == index ? <ExpandLess /> : <ExpandMore />}
+                {this.state.open == index ? <ExpandLess /> : <ExpandMore />}
               </ListItem><Divider/>
-              <Collapse component="li" in={open == index} timeout="auto" unmountOnExit>
-                <ProductOrderEdit shopId={match.params.shopId} order={order} orderIndex={index} updateOrders={updateOrders}/>
+              <Collapse component="li" in={this.state.open == index} timeout="auto" unmountOnExit>
+                <ProductOrderEdit shopId={this.match.params.shopId} order={order} orderIndex={index} updateOrders={this.updateOrders}/>
                 <div className={classes.customerDetails}>
                   <Typography type="subheading" component="h3" className={classes.subheading}>
                     Deliver to:
@@ -100,4 +103,11 @@ export default function ShopOrders({match}) {
         </List>
       </Paper>
     </div>)
+  }
 }
+
+ShopOrders.propTypes = {
+  classes: PropTypes.object.isRequired
+}
+
+export default withStyles(styles)(ShopOrders)

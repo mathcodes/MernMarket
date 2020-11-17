@@ -1,5 +1,1 @@
-/node_modules/
-/dist/
-/data/
-npm-debug.log
-.env
+node_modules

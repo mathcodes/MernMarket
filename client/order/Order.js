@@ -1,19 +1,18 @@
-import React, {useState, useEffect}  from 'react'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardMedia from '@material-ui/core/CardMedia'
-import Typography from '@material-ui/core/Typography'
-import Grid from '@material-ui/core/Grid'
-import Divider from '@material-ui/core/Divider'
-import {makeStyles} from '@material-ui/core/styles'
+import React, {Component} from 'react'
+import Card, {CardContent, CardMedia} from 'material-ui/Card'
+import Typography from 'material-ui/Typography'
+import Grid from 'material-ui/Grid'
+import PropTypes from 'prop-types'
+import Divider from 'material-ui/Divider'
+import {withStyles} from 'material-ui/styles'
 import {read} from './api-order.js'
 import {Link} from 'react-router-dom'
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   card: {
     textAlign: 'center',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing.unit,
+    paddingBottom: theme.spacing.unit * 2,
     flexGrow: 1,
     margin: 30,
   },
@@ -59,13 +58,13 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: '#80808017'
   },
   title: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing.unit * 2,
+    marginBottom: theme.spacing.unit,
     color: theme.palette.protectedTitle,
     fontSize: '1.2em'
   },
   subheading: {
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing.unit,
     color: theme.palette.openTitle
   },
   productTitle: {
@@ -94,48 +93,50 @@ const useStyles = makeStyles(theme => ({
     fontWeight: '600',
     verticalAlign: 'bottom'
   }
-}))
+})
 
-export default function Order({match}) {
-  const classes = useStyles()
-  const [order, setOrder] = useState({products:[], delivery_address:{}})
+class Order extends Component {
+  constructor({match}) {
+    super()
+    this.state = {
+      order: {products:[], delivery_address:{}},
+    }
+    this.match = match
+  }
 
-  useEffect(() => {
-    const abortController = new AbortController()
-    const signal = abortController.signal
+  componentDidMount = () => {
     read({
-      orderId: match.params.orderId
+      orderId: this.match.params.orderId
     }).then((data) => {
       if (data.error) {
-        console.log(data.error)
+        this.setState({error: data.error})
       } else {
-        setOrder(data)
+        this.setState({order: data})
       }
     })
-    return function cleanup(){
-      abortController.abort()
-    }
-  }, [])
+  }
 
-  const getTotal = () => {
-    return order.products.reduce((a, b) => {
+  getTotal(){
+    return this.state.order.products.reduce((a, b) => {
        const quantity = b.status == "Cancelled" ? 0 : b.quantity
         return a + (quantity*b.product.price)
     }, 0)
   }
 
+  render() {
+    const {classes} = this.props
     return (
       <Card className={classes.card}>
         <Typography type="headline" component="h2" className={classes.title}>
             Order Details
         </Typography>
         <Typography type="subheading" component="h2" className={classes.subheading}>
-            Order Code: <strong>{order._id}</strong> <br/> Placed on {(new Date(order.created)).toDateString()}
+            Order Code: <strong>{this.state.order._id}</strong> <br/> Placed on {(new Date(this.state.order.created)).toDateString()}
         </Typography><br/>
-        <Grid container spacing={4}>
+        <Grid container spacing={8}>
             <Grid item xs={7} sm={7}>
                 <Card className={classes.innerCardItems}>
-                  {order.products.map((item, i) => {
+                  {this.state.order.products.map((item, i) => {
                     return  <span key={i}>
                       <Card className={classes.cart} >
                         <CardMedia
@@ -157,7 +158,7 @@ export default function Order({match}) {
                     </span>})
                   }
                   <div className={classes.checkout}>
-                    <span className={classes.total}>Total: ${getTotal()}</span>
+                    <span className={classes.total}>Total: ${this.getTotal()}</span>
                   </div>
                 </Card>
             </Grid>
@@ -166,18 +167,25 @@ export default function Order({match}) {
                 <Typography type="subheading" component="h2" className={classes.productTitle} color="primary">
                  Deliver to:
                 </Typography>
-                <Typography type="subheading" component="h3" className={classes.info} color="primary"><strong>{order.customer_name}</strong></Typography><br/>
-                <Typography type="subheading" component="h3" className={classes.info} color="primary">{order.customer_email}</Typography><br/>
+                <Typography type="subheading" component="h3" className={classes.info} color="primary"><strong>{this.state.order.customer_name}</strong></Typography><br/>
+                <Typography type="subheading" component="h3" className={classes.info} color="primary">{this.state.order.customer_email}</Typography><br/>
                 <br/>
                 <Divider/>
                 <br/>
-                <Typography type="subheading" component="h3" className={classes.itemShop} color="primary">{order.delivery_address.street}</Typography>
-                <Typography type="subheading" component="h3" className={classes.itemShop} color="primary">{order.delivery_address.city}, {order.delivery_address.state} {order.delivery_address.zipcode}</Typography>
-                <Typography type="subheading" component="h3" className={classes.itemShop} color="primary">{order.delivery_address.country}</Typography><br/>
+                <Typography type="subheading" component="h3" className={classes.itemShop} color="primary">{this.state.order.delivery_address.street}</Typography>
+                <Typography type="subheading" component="h3" className={classes.itemShop} color="primary">{this.state.order.delivery_address.city}, {this.state.order.delivery_address.state} {this.state.order.delivery_address.zipcode}</Typography>
+                <Typography type="subheading" component="h3" className={classes.itemShop} color="primary">{this.state.order.delivery_address.country}</Typography><br/>
                 <Typography type="subheading" component="h3" className={classes.thanks} color="primary">Thank you for shopping with us! <br/>You can track the status of your purchased items on this page.</Typography>
               </Card>
             </Grid>
         </Grid>
       </Card>
     )
+  }
 }
+
+Order.propTypes = {
+  classes: PropTypes.object.isRequired
+}
+
+export default withStyles(styles)(Order)

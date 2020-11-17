@@ -1,22 +1,20 @@
-import React, {useState, useEffect} from 'react'
+import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Card from '@material-ui/core/Card'
-import CardMedia from '@material-ui/core/CardMedia'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import Edit from '@material-ui/icons/Edit'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import Typography from '@material-ui/core/Typography'
+import {withStyles} from 'material-ui/styles'
+import Button from 'material-ui/Button'
+import Card, {CardMedia} from 'material-ui/Card'
+import IconButton from 'material-ui/IconButton'
+import Edit from 'material-ui-icons/Edit'
+import Icon from 'material-ui/Icon'
+import List, {ListItem, ListItemSecondaryAction} from 'material-ui/List'
+import Typography from 'material-ui/Typography'
 import {Link} from 'react-router-dom'
-import Divider from '@material-ui/core/Divider'
-import {listByShop} from './api-product.js'
-import DeleteProduct from './DeleteProduct'
+import Divider from 'material-ui/Divider'
+import auth from './../auth/auth-helper'
+import {listByShop} from './../product/api-product.js'
+import DeleteProduct from './../product/DeleteProduct'
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   products: {
     padding: '24px'
   },
@@ -27,12 +25,12 @@ const useStyles = makeStyles(theme => ({
     marginRight: "8px"
   },
   title: {
-    margin: theme.spacing(2),
+    margin: theme.spacing.unit * 2,
     color: theme.palette.protectedTitle,
     fontSize: '1.2em'
   },
   subheading: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing.unit * 2,
     color: theme.palette.openTitle
   },
   cover: {
@@ -43,51 +41,51 @@ const useStyles = makeStyles(theme => ({
   details: {
     padding: '10px'
   },
-}))
-
-export default function MyProducts (props){
-  const classes = useStyles()
-  const [products, setProducts] = useState([])
-  
-  useEffect(() => {
-    const abortController = new AbortController()
-    const signal = abortController.signal
-
-    listByShop({
-      shopId: props.shopId
-    }, signal).then((data)=>{
-      if (data.error) {
-        console.log(data.error)
-      } else {
-        setProducts(data)
-      }
-    })
-    return function cleanup(){
-      abortController.abort()
-    }
-  }, [])
-
-  const removeProduct = (product) => {
-    const updatedProducts = [...products]
-    const index = updatedProducts.indexOf(product)
-    updatedProducts.splice(index, 1)
-    setProducts(updatedProducts)
+})
+class MyProducts extends Component {
+  state = {
+    products: []
   }
 
+  loadProducts = () => {
+    listByShop({
+      shopId: this.props.shopId
+    }).then((data)=>{
+      if (data.error) {
+        this.setState({error: data.error})
+      } else {
+        this.setState({products: data})
+      }
+    })
+  }
+
+  componentDidMount = () => {
+   this.loadProducts()
+  }
+
+  removeProduct = (product) => {
+    const updatedProducts = this.state.products
+    const index = updatedProducts.indexOf(product)
+    updatedProducts.splice(index, 1)
+    this.setState({shops: updatedProducts})
+  }
+
+  render() {
+    const {classes} = this.props
     return (
       <Card className={classes.products}>
         <Typography type="title" className={classes.title}>
           Products
           <span className={classes.addButton}>
-            <Link to={"/seller/"+props.shopId+"/products/new"}>
-              <Button color="primary" variant="contained">
+            <Link to={"/seller/"+this.props.shopId+"/products/new"}>
+              <Button color="primary" variant="raised">
                 <Icon className={classes.leftIcon}>add_box</Icon>  New Product
               </Button>
             </Link>
           </span>
         </Typography>
         <List dense>
-        {products.map((product, i) => {
+        {this.state.products.map((product, i) => {
             return <span key={i}>
               <ListItem>
                 <CardMedia
@@ -111,15 +109,18 @@ export default function MyProducts (props){
                   </Link>
                   <DeleteProduct
                     product={product}
-                    shopId={props.shopId}
-                    onRemove={removeProduct}/>
+                    shopId={this.props.shopId}
+                    onRemove={this.removeProduct}/>
                 </ListItemSecondaryAction>
               </ListItem>
               <Divider/></span>})}
         </List>
       </Card>)
+  }
 }
 MyProducts.propTypes = {
+  classes: PropTypes.object.isRequired,
   shopId: PropTypes.string.isRequired
 }
 
+export default withStyles(styles)(MyProducts)
