@@ -1,8 +1,8 @@
 import User from '../models/user.model'
 import extend from 'lodash/extend'
-import errorHandler from './../helpers/dbErrorHandler'
+import errorHandler from '../helpers/dbErrorHandler'
 import request from 'request'
-import config from './../../config/config'
+import config from '../../config/config'
 import stripe from 'stripe'
 
 const myStripe = stripe(config.stripe_test_secret_key)

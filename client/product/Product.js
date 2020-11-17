@@ -8,8 +8,8 @@ import Grid from '@material-ui/core/Grid'
 import {makeStyles} from '@material-ui/core/styles'
 import {read, listRelated} from './api-product.js'
 import {Link} from 'react-router-dom'
-import Suggestions from './../product/Suggestions'
-import AddToCart from './../cart/AddToCart'
+import Suggestions from './Suggestions'
+import AddToCart from '../cart/AddToCart'
 
 const useStyles = makeStyles(theme => ({
   root: {

@@ -10,7 +10,7 @@ const config = {
     output: {
         path: path.join(CURRENT_WORKING_DIR , '/dist'),
         filename: 'bundle.js',
-        publicPath: "/MernMarket/"
+        publicPath: "/dist/"
     },
     module: {
         rules: [

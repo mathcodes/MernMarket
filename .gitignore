@@ -1,2 +1,4 @@
 /node_modules/
-/Users/jonchristie/Desktop/MernMarket/dist
+/dist/
+/data/
+npm-debug.log

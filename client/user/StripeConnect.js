@@ -4,7 +4,7 @@ import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import queryString from 'query-string'
 import {stripeUpdate} from './api-user.js'
-import auth from './../auth/auth-helper'
+import auth from '../auth/auth-helper'
 
 const useStyles = makeStyles(theme => ({
   root: theme.mixins.gutters({

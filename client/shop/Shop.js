@@ -6,8 +6,8 @@ import Typography from '@material-ui/core/Typography'
 import Avatar from '@material-ui/core/Avatar'
 import Grid from '@material-ui/core/Grid'
 import {read} from './api-shop.js'
-import Products from './../product/Products'
-import {listByShop} from './../product/api-product.js'
+import Products from '../product/Products'
+import {listByShop} from '../product/api-product.js'
 
 const useStyles = makeStyles(theme => ({
   root: {

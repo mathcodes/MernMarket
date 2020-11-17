@@ -6,7 +6,7 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
-import auth from './../auth/auth-helper'
+import auth from '../auth/auth-helper'
 import {listByUser} from './api-order.js'
 import {Link} from 'react-router-dom'
 

@@ -9,7 +9,7 @@ import ExpandLess from '@material-ui/icons/ExpandLess'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import Collapse from '@material-ui/core/Collapse'
 import Divider from '@material-ui/core/Divider'
-import auth from './../auth/auth-helper'
+import auth from '../auth/auth-helper'
 import {listByShop} from './api-order.js'
 import ProductOrderEdit from './ProductOrderEdit'
 

@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import auth from './../auth/auth-helper'
+import auth from '../auth/auth-helper'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardMedia from '@material-ui/core/CardMedia'

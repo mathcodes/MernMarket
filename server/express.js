@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser'
 import compress from 'compression'
 import cors from 'cors'
 import helmet from 'helmet'
-import Template from './../template'
+import Template from '../template'
 import userRoutes from './routes/user.routes'
 import authRoutes from './routes/auth.routes'
 import shopRoutes from './routes/shop.routes'
@@ -16,21 +16,21 @@ import auctionRoutes from './routes/auction.routes'
 // modules for server side rendering
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import MainRouter from './../client/MainRouter'
+import MainRouter from '../client/MainRouter'
 import { StaticRouter } from 'react-router-dom'
 
 import { ServerStyleSheets, ThemeProvider } from '@material-ui/styles'
-import theme from './../client/theme'
+import theme from '../client/theme'
 //end
 
 //comment out before building for production
-// import devBundle from './devBundle'
+import devBundle from './devBundle'
 
 const CURRENT_WORKING_DIR = process.cwd()
 const app = express()
 
 //comment out before building for production
-// devBundle.compile(app)
+devBundle.compile(app)
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json())
@@ -74,7 +74,7 @@ app.get('*', (req, res) => {
     }))
 })
 
-// Catch unauthorized errors
+// Catch unauthorised errors
 app.use((err, req, res, next) => {
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({"error" : err.name + ": " + err.message})
